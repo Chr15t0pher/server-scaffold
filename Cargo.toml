@@ -1,0 +1,30 @@
+[package]
+name = "server-scaffold"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+path = "src/main.rs"
+name = "server-scaffold"
+
+[dependencies]
+actix-web = "4.4.0"
+chrono = "0.4.31"
+config = "0.13.3"
+serde = { version = "1.0.189", features = ["derive"] }
+sqlx = { version = "0.7.2", features = [
+  "postgres",
+  "uuid",
+  "chrono",
+  "runtime-tokio",
+] }
+tokio = { version = "1.33.0", features = ["full"] }
+uuid = { version = "1.5.0", features = ["v4"] }
+
+[dev-dependencies]
+reqwest = "0.11.22"

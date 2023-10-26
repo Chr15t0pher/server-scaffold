@@ -1,0 +1,7 @@
+database:
+  username: postgres
+  password: admin
+  port: 5432
+  host: localhost
+  database_name: scaffold
+application_port: 8081
