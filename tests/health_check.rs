@@ -1,9 +1,26 @@
 #[cfg(test)]
 mod tests {
+    use once_cell::sync::Lazy;
     use reqwest::{Client, Proxy};
-    use server_scaffold::configuration::{get_configuration, DatabaseSettings};
+    use server_scaffold::{
+        configuration::{get_configuration, DatabaseSettings},
+        telemetry::{get_subscriber, init_subscriber},
+    };
     use sqlx::{query, Connection, Executor, PgConnection, PgPool};
     use std::net::TcpListener;
+
+    static TRACING: Lazy<()> = Lazy::new(|| {
+        let default_filter_level = "info".into();
+        let subscriber_name = "test".into();
+
+        if std::env::var("TEST_LOG").is_ok() {
+            let subscriber = get_subscriber(subscriber_name, default_filter_level, std::io::stdout);
+            init_subscriber(subscriber);
+        } else {
+            let subscriber = get_subscriber(subscriber_name, default_filter_level, std::io::sink);
+            init_subscriber(subscriber);
+        }
+    });
 
     struct TestApp {
         address: String,
@@ -11,6 +28,8 @@ mod tests {
     }
 
     async fn spawn_app() -> TestApp {
+        Lazy::force(&TRACING);
+
         let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind random port.");
         let port = listener.local_addr().unwrap().port();
         let address = format!("http://localhost:{}", port);
@@ -21,7 +40,6 @@ mod tests {
             .expect("Failed to bind address.");
         let _ = tokio::spawn(server);
 
-        println!("{:?}", address);
         TestApp { address, db_pool }
     }
 
@@ -65,7 +83,6 @@ mod tests {
             .await
             .expect("Failed to execute request.");
 
-        println!("{:?}", response);
         assert!(response.status().is_success());
         assert_eq!(response.content_length(), Some(0));
     }
