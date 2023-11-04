@@ -2,6 +2,7 @@
 mod tests {
     use once_cell::sync::Lazy;
     use reqwest::{Client, Proxy};
+    use secrecy::ExposeSecret;
     use server_scaffold::{
         configuration::{get_configuration, DatabaseSettings},
         telemetry::{get_subscriber, init_subscriber},
@@ -17,6 +18,7 @@ mod tests {
             let subscriber = get_subscriber(subscriber_name, default_filter_level, std::io::stdout);
             init_subscriber(subscriber);
         } else {
+            //  All of the output is directed into std::io::sink.
             let subscriber = get_subscriber(subscriber_name, default_filter_level, std::io::sink);
             init_subscriber(subscriber);
         }
@@ -44,16 +46,17 @@ mod tests {
     }
 
     async fn configure_database(config: &DatabaseSettings) -> PgPool {
-        let mut connection = PgConnection::connect(&config.connection_string_without_dbname())
-            .await
-            .expect("Failed to connect to database.");
+        let mut connection =
+            PgConnection::connect(&config.connection_string_without_dbname().expose_secret())
+                .await
+                .expect("Failed to connect to database.");
 
         connection
             .execute(format!(r#"CREATE DATABASE "{}";"#, config.database_name).as_str())
             .await
             .expect("Failed to create database");
 
-        let db_pool = PgPool::connect(&config.connection_string())
+        let db_pool = PgPool::connect(&config.connection_string().expose_secret())
             .await
             .expect("Failed to connect to Postgres");
 
@@ -105,7 +108,7 @@ mod tests {
 
         assert!(response.status().is_success());
 
-        let pool = PgPool::connect(&connection_string)
+        let pool = PgPool::connect(&connection_string.expose_secret())
             .await
             .expect("Failed to connect to pool.");
 

@@ -15,5 +15,9 @@ brew install postgresql
 ## Development
 
 ```bash
-RUST_LOG=info cargo watch -x check -x "test | bunyan" -x "run | bunyan"
+// test
+TEST_LOG=true cargo test | bunyan
+
+// dev
+RUST_LOG=trace cargo watch -x check -x "run | bunyan"
 ```
