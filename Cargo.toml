@@ -19,12 +19,7 @@ tracing = { version = "0.1.40", features = ["log"] }
 chrono = "0.4.31"
 config = "0.13.3"
 serde = { version = "1.0.189", features = ["derive"] }
-sqlx = { version = "0.7.2", features = [
-  "postgres",
-  "uuid",
-  "chrono",
-  "runtime-tokio",
-] }
+sqlx = { version = "0.7.2", features = ["postgres", "uuid", "chrono", "runtime-tokio"] }
 tokio = { version = "1.33.0", features = ["full"] }
 tracing-subscriber = { version = "0.3.17", features = [
   "registry",

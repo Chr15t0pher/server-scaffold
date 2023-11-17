@@ -28,5 +28,8 @@
 **/values.dev.yaml
 /bin
 /target
+/tests
+/scripts
+/migrations
 LICENSE
 README.md
