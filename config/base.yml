@@ -7,3 +7,8 @@ database:
 application:
   port: 8081
   host: 127.0.0.1
+email_client:
+  base_url: localhost
+  sender_email: test@gmail.com
+  authorization_token: my_secret_token
+  timeout_milliseconds: 10000

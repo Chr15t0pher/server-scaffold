@@ -5,6 +5,7 @@ mod tests {
     use secrecy::ExposeSecret;
     use server_scaffold::{
         configuration::{get_configuration, DatabaseSettings},
+        email_client::EmailClient,
         telemetry::{get_subscriber, init_subscriber},
     };
     use sqlx::{query, Connection, Executor, PgConnection, PgPool};
@@ -38,7 +39,21 @@ mod tests {
         let mut configuration = get_configuration().expect("Failed to read configuration.");
         configuration.database.database_name = uuid::Uuid::new_v4().to_string();
         let db_pool = configure_database(&configuration.database).await;
-        let server = server_scaffold::startup::run(listener, db_pool.clone())
+
+        let sender_email = configuration
+            .email_client
+            .sender()
+            .expect("Invalid email address.");
+
+        let timeout = configuration.email_client.timeout();
+        let email_client = EmailClient::new(
+            configuration.email_client.base_url,
+            sender_email,
+            configuration.email_client.authorization_token,
+            timeout,
+        );
+
+        let server = server_scaffold::startup::run(listener, db_pool.clone(), email_client)
             .expect("Failed to bind address.");
         let _ = tokio::spawn(server);
 
@@ -146,6 +161,33 @@ mod tests {
                 // Additional customised error message on test failure
                 "The API did not fail with 400 Bad Request when the payload was {}.",
                 error_message
+            );
+        }
+    }
+
+    #[tokio::test]
+    async fn subscribe_returns_a_400_when_fields_are_present_but_empty() {
+        let app = spawn_app().await;
+        let client = build_client();
+        let test_cases = vec![
+            ("name=&email=ursula_le_guin%40gmail.com", "empty name"),
+            ("name=Ursula&email=", "empty email"),
+            ("name=Ursula&email=definitely-not-an-email", "invalid email"),
+        ];
+
+        for (invalid_body, description) in test_cases {
+            let response = client
+                .post(format!("{}/subscriptions", &app.address))
+                .header("Content-Type", "application/x-www-form-urlencoded")
+                .body(invalid_body)
+                .send()
+                .await
+                .expect("Failed to execute request.");
+            assert_eq!(
+                400,
+                response.status().as_u16(),
+                "The API did not return a 200 OK when the payload is {}",
+                description
             );
         }
     }
