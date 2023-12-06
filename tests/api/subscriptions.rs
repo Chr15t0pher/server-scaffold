@@ -1,14 +1,9 @@
 use crate::helpers::{build_client, spawn_app};
-use secrecy::ExposeSecret;
-use server_scaffold::configuration::get_configuration;
-use sqlx::{query, PgPool};
 
 #[tokio::test]
 async fn subscribe_returns_a_200_for_valid_form_data() {
     let app = spawn_app().await;
     let client = build_client();
-    let connection = get_configuration().expect("Failed to read configuration.");
-    let connection_string = connection.database.connection_string();
 
     let body = "name=Chris%20topher&email=any_thing%40gmail.com";
     let response = client
@@ -21,14 +16,13 @@ async fn subscribe_returns_a_200_for_valid_form_data() {
 
     assert!(response.status().is_success());
 
-    let pool = PgPool::connect(&connection_string.expose_secret())
-        .await
-        .expect("Failed to connect to pool.");
-
-    query!("SELECT email, name FROM subscriptions")
-        .fetch_one(&pool)
+    let saved = sqlx::query!("SELECT email, name FROM subscriptions")
+        .fetch_one(&app.db_pool)
         .await
         .expect("");
+
+    assert_eq!(saved.email, "any_thing@gmail.com");
+    assert_eq!(saved.name, "Chris topher");
 }
 
 #[tokio::test]
