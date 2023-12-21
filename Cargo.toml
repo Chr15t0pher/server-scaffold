@@ -38,6 +38,8 @@ unicode-segmentation = "1.10.1"
 validator = "0.16.1"
 rand = { version = "0.8.5", features = ["std_rng"] }
 reqwest = { version="0.11.22", features=["json"] }
+thiserror = "1.0.51"
+anyhow = "1.0.75"
 
 [dev-dependencies]
 claims = "0.7.1"
