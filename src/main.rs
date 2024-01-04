@@ -11,7 +11,7 @@ async fn main() -> std::io::Result<()> {
 
     let application = Application::build(configuration.clone()).await?;
 
-    tokio::spawn(application.run_until_stopped());
+    application.run_until_stopped().await?;
 
     Ok(())
 }
