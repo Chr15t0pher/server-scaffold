@@ -7,6 +7,7 @@ pub struct Settings {
     pub database: DatabaseSettings,
     pub application: ApplicationSettings,
     pub email_client: EmailClientSettings,
+    pub redis_uri: Secret<String>,
 }
 
 #[derive(serde::Deserialize, Debug, Clone)]
@@ -86,6 +87,7 @@ pub fn get_configuration() -> Result<Settings, ConfigError> {
         .try_deserialize()
 }
 
+#[derive(Debug, Copy, Clone)]
 pub enum Environment {
     Development,
     Production,

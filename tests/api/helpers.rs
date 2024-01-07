@@ -84,6 +84,18 @@ impl TestApp {
             .unwrap()
     }
 
+    pub async fn get_admin_dashboard(&self) -> reqwest::Response {
+        self.api_client
+            .get(format!("{}/admin/dashboard", self.address))
+            .send()
+            .await
+            .expect("Failed to execute request")
+    }
+
+    pub async fn get_admin_dashboard_html(&self) -> String {
+        self.get_admin_dashboard().await.text().await.unwrap()
+    }
+
     pub fn get_confirmation_links(&self, email_request: &wiremock::Request) -> ConfirmationLinks {
         let body: serde_json::Value = serde_json::from_slice(&email_request.body).unwrap();
         let get_link = |s: &str| {
@@ -148,11 +160,8 @@ pub async fn spawn_app() -> TestApp {
     Lazy::force(&TRACING);
     let email_server = MockServer::start().await;
 
-    let mut configuration = get_configuration().expect("Failed to read configuration.");
-    configuration.database.database_name = uuid::Uuid::new_v4().to_string();
-
     let configuration = {
-        let mut c = get_configuration().expect("Failed to read configuration.");
+        let mut c = get_configuration().expect("Failed to read configuration");
         c.database.database_name = uuid::Uuid::new_v4().to_string();
         c.application.port = 0;
         c.email_client.base_url = email_server.uri();
