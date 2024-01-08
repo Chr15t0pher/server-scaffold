@@ -48,6 +48,7 @@ actix-web-flash-messages = { version = "0.4.2", features = ["cookies"] }
 cookie = "0.18.0"
 actix-session = { version = "0.8.0", features = ["redis-rs-tls-session"] }
 serde_json = "1.0.108"
+actix-web-lab = "0.20.1"
 
 [dev-dependencies]
 claims = "0.7.1"
