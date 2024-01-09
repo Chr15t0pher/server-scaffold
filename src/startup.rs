@@ -16,7 +16,7 @@ use tracing_actix_web::TracingLogger;
 
 use crate::routes::{
     admin_dashboard, change_password, change_password_form, confirm, health_check, home, log_out,
-    login, login_form, publish_newsletter, subscribe,
+    login, login_form, publish_newsletter, publish_newsletter_form, subscribe,
 };
 
 pub struct Application {
@@ -111,7 +111,9 @@ pub async fn run(
                     .route("/dashboard", web::get().to(admin_dashboard))
                     .route("/password", web::get().to(change_password_form))
                     .route("/password", web::post().to(change_password))
-                    .route("/logout", web::post().to(log_out)),
+                    .route("/logout", web::post().to(log_out)) // .route("/newsletter", web::post().to()),
+                    .route("/newsletters", web::post().to(publish_newsletter))
+                    .route("/newsletters", web::get().to(publish_newsletter_form)),
             )
             .app_data(db_pool.clone())
             .app_data(email_client.clone())
